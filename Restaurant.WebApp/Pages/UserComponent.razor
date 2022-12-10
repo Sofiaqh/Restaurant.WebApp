@@ -1,0 +1,73 @@
+﻿@page "/usercomponent"
+
+@inject IUserServices userServices
+
+
+@if(users != null)
+{
+    
+    <MudDataGrid T="Users" Items="@users" RowsPerPage="5" SortMode="SortMode.Single" QuickFilter="@_quickFilter">
+         <ToolBarContent>
+        <MudText Typo="Typo.h6">Usuarios</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="_searchString" Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
+            AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    
+        <Columns>           
+            <Column T="Users" Field="id" Title="Identificación" />
+            <Column T="Users" Field="name" Title="Nombre" />
+            <Column T="Users" Field="email" Title="Email"/>
+        </Columns>
+        @* <ChildRowContent>
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@context.Item.address.street</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText>Ciudad @context.Item.address.city</MudText>
+                <MudText>Código postal @context.Item.address.zipcode</MudText>
+            </MudCardContent>
+        </MudCard>
+    </ChildRowContent>*@
+    <PagerContent>
+        <MudDataGridPager T="Users" />
+    </PagerContent>
+    </MudDataGrid>
+}
+
+
+
+@code {
+    IEnumerable<Users> users;
+    private string _searchString;
+
+    private Func<Users, bool> _quickFilter => x =>
+       {
+       if (string.IsNullOrWhiteSpace(_searchString))
+           return true;
+
+       if (x.name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+           return true;
+
+       if (x.email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+           return true;
+
+       if ($"{x.id} {x.name} {x.email}".Contains(_searchString))
+           return true;
+
+       return false;
+       };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request  = await userServices.GetAll();
+
+        if (request != null)
+            users = request;
+    }
+
+   
+}
